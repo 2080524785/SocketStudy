@@ -1,5 +1,21 @@
 package com.zhao.all;
 
+import io.netty.channel.Channel;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.handler.codec.serialization.ClassResolver;
+import javafx.concurrent.Task;
+
+import io.netty.handler.codec.serialization.ClassResolvers;
+import java.awt.*;
+import java.io.ByteArrayOutputStream;
+import java.io.Serializable;
+import java.net.InetSocketAddress;
+import java.util.concurrent.ExecutorService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class Client extends Task<ClientUI> implements Serializable {
     private static final long serialVersionUID = 1L;
     private static final Rectangle dimension = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
@@ -43,7 +59,7 @@ public class Client extends Task<ClientUI> implements Serializable {
     }
 
 
-    public CTasks(Client_Task messages) {
+    public void CTasks(Client_Task messages) {
         this.messages = messages;
         this.forkJoin = messages.getForkJoin();
     }

@@ -1,8 +1,26 @@
 package com.zhao.all;
 
-import static javafx.application.Application.launch;
+import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
+import javafx.scene.image.ImageView;
+import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
-public class ClientUI extends Application implements Serializable, EventHandler<ActionEvent>  {
+import java.io.IOException;
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+public class ClientUI extends Application implements Serializable, EventHandler<ActionEvent> {
     private static final long serialVersionUID = 1L;
     private Integer count = 2;
     private String[] buttontxt = {"发送","发送文件","视频通话","音频通话"};
@@ -15,7 +33,7 @@ public class ClientUI extends Application implements Serializable, EventHandler<
     private TextArea textarea = new TextArea();
     private FileChooser fileChooser = new FileChooser();
 
-    private Alert alertss = new Alert(AlertType.INFORMATION);
+    private Alert alertss = new Alert(Alert.AlertType.INFORMATION);
     private SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private List<Object> contentLabelList = new ArrayList<>();
     private ExecutorService forkJoin = Executors.newFixedThreadPool(10);
@@ -28,7 +46,7 @@ public class ClientUI extends Application implements Serializable, EventHandler<
     private Stage stage;
 
 
-    public Server_Task() throws IOException{
+    public Server_Task() throws IOException {
 //		datagram.socket().setReceiveBufferSize(Integer.MAX_VALUE);
 //		datagram.socket().setSendBufferSize(Integer.MAX_VALUE);
 //		datagram.socket().setBroadcast(true);

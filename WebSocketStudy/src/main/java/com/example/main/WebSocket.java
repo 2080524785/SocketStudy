@@ -1,14 +1,13 @@
 package com.example.main;
 
-import jakarta.websocket.*;
-import jakarta.websocket.server.PathParam;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
+import lombok.extern.slf4j.Slf4j;
+
+import javax.websocket.*;
+import javax.websocket.server.PathParam;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.CopyOnWriteArraySet;
-@Component
+//@Component
 @Slf4j
 public class WebSocket {
     private Session session;
