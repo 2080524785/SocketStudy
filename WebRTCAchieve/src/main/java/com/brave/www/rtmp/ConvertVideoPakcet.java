@@ -1,9 +1,4 @@
-package com.example.demo.rtmp;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.*;
+package com.brave.www.rtmp;
 
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.ffmpeg.avcodec.AVPacket;
@@ -13,9 +8,10 @@ import org.bytedeco.javacv.FFmpegFrameGrabber;
 import org.bytedeco.javacv.FFmpegFrameRecorder;
 import org.bytedeco.javacv.FrameGrabber.Exception;
 import org.bytedeco.javacv.FrameRecorder;
-import org.springframework.context.annotation.Bean;
 
-import javax.annotation.Resource;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Java opencv 实现拉取网络摄像头rtsp转rtmp（转封装方式）传输到流媒体服务器  
