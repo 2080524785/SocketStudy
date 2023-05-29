@@ -155,9 +155,79 @@ initial-scale=1,maximum-scale=1" />
             peer.addEventListener("removestream", onRemoteStreamRemoved, false);
             
             function onRemoteStreamAdded(evt) {
-                console.log("add origin video stream");
+                console.log("add remote video stream");
                 // remoteVideo.src = window.URL.createObjectURL(evt.stream)
-        }       remo
+              remoteVideo.sreObject = evt.stream;
+            }
+            function onRemoteStreamRemoved(evt) {
+                console.log("remove remote video stream");
+                remoteVideo.src="";
+            }
+        }
+
+        function sendOffer(){
+            peerConnection = prepareNewConnection();
+            peerConnection.createOffer(function (sessionDescription){
+                peerConnection.setLocalDescription(sessionDescription);
+                console.log("send : SDP")
+                console.log(sessionDescription)
+                sendSDP(sessionDescription);
+            }, function (err){
+                console.log("failed to create offer");
+
+            },mediaConstraints);
+        }
+
+        function setOffer(evt){
+            if (peerConnection) {
+                console.error("peerConnection has been existed");
+                return;
+            }
+            peerConnection = prepareNewConnection();
+            peerConnection.setRemoteDescription(new RTCSessionDescription(evt));
+
+        }
+        function sendAnswer(evt) {
+            console.log("send answers,create remote session description");
+            if(!peerConnection){
+                console.error("peerConnection is not existing");
+                return;
+            }
+            peerConnection.createAnswer(function (sessionDescription){
+                peerConnection.setLocalDescription(sessionDescription);
+                console.log("send : SDP");
+                console.log(sessionDescription);
+                sendSDP(sessionDescription);
+            }, function(){
+                console.error("failed to create answer");
+            },mediaConstraints);
+        }
+
+        function setAnswer(evt) {
+            if(!peerConnection){
+                console.error("peerConnection is not existing");
+                return ;
+            }
+            peerConnection.setRemoteDescription(new RTCSessionDescription(evt));
+        }
+        //-------- 处理用户UI事件 -----
+        // 开始建立连接
+        function connect(){
+            if(!peerStarted && localStream && socketRead){
+                sendOffer();
+                peerStarted=true;
+            }else{
+                alert("please firstly capture origin video stream data");
+            }
+        }
+        function hangUp(){
+            console.log("hangUp");
+        }
+        function stop(){
+            peerConnection.close();
+            peerConnection = null;
+            peerStarted = false;
+        }
     </script>
 </body>
 </html>
