@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>video</title>
+</head>
+
+<body>
+<h2 style="text-align: center;">播放页面</h2>
+<h3 id="myId" style="text-align: center;"></h3>
+<center>
+    <div>
+        <video id="remoteVideo" class="video" autoplay="autoplay"></video>
+    </div>
+</center>
+
+</br>
+<div style="text-align: center;">
+    <button id="websocketBtn" onclick="startWebsocket()">打开websocket</button>
+    <button id="hangupBtn" onclick="hangupHandle()">断开连接</button>
+</div>
+</br>
+<div style="text-align: center;">
+    对方id: <input id="toUserId" value="1">
+</div>
+<script src="./adapter-latest.js"></script>
+<script>
+    //媒体对象
+    const remoteVideo = document.querySelector('#remoteVideo');
+
+    const hangupBtn = document.getElementById('hangupBtn')
+    const websocketBtn = document.getElementById('websocketBtn')
+
+    const config = {
+        iceServers: [
+            { urls: 'stun:global.stun.twilio.com:3478?transport=udp' }
+        ],
+    };
+
+    const peer = new RTCPeerConnection(config);
+
+    let socket, userId, toUserId;
+    userId = parseInt(Math.random()*10000);
+    document.getElementById('myId').innerText = '我的id:' + userId;
+    // 本地流和远端流
+    let remoteStream;
+
+    function startWebsocket() {
+        toUserId = document.getElementById('toUserId').value
+
+        socket = new WebSocket('wss://' + location.host + '/websocket/' + userId);
+        //连接成功
+        socket.onopen = function (e) {
+            console.log('连接成功')
+            websocketBtn.disabled = true
+        };
+        //server端请求关闭
+        socket.onclose = function (e) {
+            console.log('close')
+            websocketBtn.disabled = false
+        };
+        //error
+        socket.onerror = function (e) {
+            console.error(e)
+            websocketBtn.disabled = false
+        };
+        socket.onmessage = onmessage
+    }
+
+    let onmessage = function (e) {
+        const description = JSON.parse(e.data)
+
+        switch (description.type) {
+            case 'offer':
+                peer.setRemoteDescription(new RTCSessionDescription(description)).then(() => {
+                    console.log('设置remote offer成功!');
+                }).catch((err) => {
+                    console.error('设置remote offer错误', err);
+                });
+
+                peer.createAnswer().then(function (answer) {
+
+                    peer.setLocalDescription(answer).then(() => {
+                        console.log('设置本地answer成功!');
+                    }).catch((err) => {
+                        console.error('设置本地answer失败', err);
+                    });
+
+                    socket.send(JSON.stringify({ 'userId': toUserId, 'message': answer }));
+                }).catch(e => {
+                    console.error(e)
+                });
+                break;
+            case 'icecandidate':
+                // 创建 RTCIceCandidate 对象
+                let newIceCandidate = new RTCIceCandidate(description.icecandidate);
+
+                // 将本地获得的 Candidate 添加到远端的 RTCPeerConnection 对象中
+                peer.addIceCandidate(newIceCandidate).then(() => {
+                    console.log(`addIceCandidate 成功`);
+                }).catch((error) => {
+                    console.log(`addIceCandidate 错误:\n` + `${error.toString()}.`);
+                });
+                break;
+            case 'answer':
+
+                peer.setRemoteDescription(new RTCSessionDescription(description)).then(() => {
+                    console.log('设置remote answer成功!');
+                }).catch((err) => {
+                    console.log('设置remote answer错误', err);
+                });
+                break;
+            default:
+                break;
+        }
+    }
+
+    //创建发起方会话描述对象（createOffer），设置本地SDP（setLocalDescription），并通过信令服务器发送到对等端，以启动与远程对等端的新WebRTC连接。
+    function startConnection() {
+
+        hangupBtn.disabled = false;
+        console.log('listening ...')
+        // 监听返回的 Candidate
+        peer.addEventListener('icecandidate', handleConnection);
+        // 监听 ICE 状态变化
+        peer.addEventListener('iceconnectionstatechange', handleConnectionChange)
+        //拿到流的时候调用
+        peer.addEventListener('track', gotRemoteMediaStream);
+
+    }
+
+    startConnection()
+
+    function hangupHandle() {
+        // 关闭连接并设置为空
+        peer.close();
+        peer = null;
+        hangupBtn.disabled = true;
+    }
+
+    // 3.端与端建立连接
+    function handleConnection(event) {
+        console.log("handleConnection")
+        const icecandidate = event.candidate;
+        if (icecandidate) {
+            socket.send(JSON.stringify({
+                'userId': toUserId, 'message': {
+                    type: 'icecandidate',
+                    icecandidate: icecandidate
+                }
+            }));
+        }
+    }
+
+    // 4.显示远端媒体流
+    function gotRemoteMediaStream(event) {
+        console.log('remote 开始接受远端流')
+        if (event.streams[0]) {
+            console.log('start video ....')
+            remoteVideo.srcObject = event.streams[0];
+            remoteStream = event.streams[0];
+        }
+    }
+
+    function handleConnectionChange(event) {
+        const peerConnection = event.target;
+        console.log('ICE state change event: ', event);
+        console.log(`ICE state: ` + `${peerConnection.iceConnectionState}.`);
+    }
+
+</script>
+</body>
+</html>
+<style>
+    .video {
+        background-color: black;
+        height: 30vh;
+    }
+</style>
